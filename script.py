@@ -1,9 +1,3 @@
-#!/usr/bin/env python
-# coding: utf-8
-
-# In[6]:
-
-
 import os
 import shutil
 import cv2
@@ -11,10 +5,12 @@ import random
 import pytesseract
 import matplotlib.pyplot as plt
 import re
+
+#Put the path here
 pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
 
 
-# In[49]:
+# OpenCV image preprocessing and Tesseract model
 
 
 def recognize_plate(img):
@@ -75,17 +71,10 @@ def recognize_plate(img):
         rect = cv2.rectangle(im2, (x,y), (x+w, y+h), (0,255,0),2)
         # grab character region of image
         roi = thresh[y-5:y+h+5, x-5:x+w+5]
-#         cv2.imshow("roi", roi)
-#         cv2.waitKey(0)
-#         plt.imshow(roi)
-#         plt.show()
         # perfrom bitwise not to flip image to black text on white background
         roi = cv2.bitwise_not(roi)
         # perform another blur on character region
         roi = cv2.medianBlur(roi, 5)
-#         print(roi)
-#         plt.imshow(roi)
-#         plt.show()
 #         cv2.imshow('roi', roi)
         try:
             text = pytesseract.image_to_string(roi,
@@ -102,25 +91,13 @@ def recognize_plate(img):
     return plate_num
 
 
-# In[15]:
-
-
+#Reading Dataset.csv
 import pandas as pd 
-dataset = pd.read_csv('C:/Users/hp/Desktop/IDFY/dataset.csv', names = ['Images','Plate'])
-
-
-# In[16]:
-
-
-dataset
+dataset = pd.read_csv('dataset.csv', names = ['Images','Plate'])
 dataset = dataset.sort_values('Images')
-dataset
 
 
-# In[12]:
-
-
-# sources = ['C:/Users/hp/Desktop/IDFY/HDR/','C:/Users/hp/Desktop/IDFY/normal/']
+#Put target as your Dataset Images location path
 target = 'C:/Users/hp/Desktop/IDFY/test_set/'
 # for source in sources:
 #     l = os.listdir(source)
@@ -131,10 +108,7 @@ target = 'C:/Users/hp/Desktop/IDFY/test_set/'
 #             shutil.copy(path + '/' + img, target + "".join(folder+ img) )
         
 
-
-# In[50]:
-
-
+#Applying model to images
 plates_esm = []
 for img in os.listdir(target):
     print(img)
@@ -144,9 +118,7 @@ for img in os.listdir(target):
     plates_esm.append(recognize_plate(image))
 
 
-# In[57]:
-
-
+#Accuracy Calculation 
 print("Actual License Plate", "\t", "Predicted License Plate", "\t", "Accuracy") 
 print("--------------------", "\t", "-----------------------", "\t", "--------") 
 
@@ -175,9 +147,7 @@ inf = {'Actual License Plate':[], 'Predicted License Plate':[], 'Accuracy':[]}
 calculate_predicted_accuracy(dataset.Plate, plates_esm)
 print(len(count))
 
-
-# In[64]:
-
+#Saving Inference dataframe as CSV file
 
 inference = pd.DataFrame(inf)
 inference.to_csv('Inference.csv', index = False)
